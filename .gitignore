@@ -1,0 +1,8 @@
+*.obj
+*.user
+*.suo
+*.ncb
+obj/
+[Bb]in
+[Dd]ebug*/
+[Rr]elease*/

@@ -44,17 +44,17 @@ namespace IronImporter
 
     public class HealthGraph : IJSONable
     {
-        private string Type { get; set; }
-        private string SecondType { get; set; }
-        private string Equipment { get; set; }
-        private DateTime StartTime { get; set; }
-        private double? TotalDistance { get; set; }
-        private double? Duration { get; set; }
-        private int? AverageHeartrate { get; set; }
-        private List<HeartRate> HeartRate { get; set; }
-        private double? TotalCalories { get; set; }
-        private string Notes { get; set; }
-        private List<Path> Path { get; set; }
+        public string Type { get; set; }
+        public string SecondType { get; set; }
+        public string Equipment { get; set; }
+        public DateTime? StartTime { get; set; }
+        public double? TotalDistance { get; set; }
+        public double? Duration { get; set; }
+        public int? AverageHeartrate { get; set; }
+        public List<HeartRate> HeartRate { get; set; }
+        public double? TotalCalories { get; set; }
+        public string Notes { get; set; }
+        public List<Path> Path { get; set; }
         // post_to_twitter
         // post_to_facebook
         // detect_pause
@@ -74,10 +74,10 @@ namespace IronImporter
                 json.Append(',');
                 PutKeyValuePair("equipment", SecondType, ref json);
             }
-            if (StartTime != null)
+            if (StartTime.HasValue)
             {
                 json.Append(',');
-                PutKeyValuePair("start_time", StartTime.ToString("r", new DateTimeFormatInfo()), ref json);
+                PutKeyValuePair("start_time", StartTime.Value.ToString("r", new DateTimeFormatInfo()), ref json);
             }
             if (TotalDistance != null)
             {
@@ -97,7 +97,7 @@ namespace IronImporter
             if (HeartRate != null && HeartRate.Count > 0)
             {
                 json.Append(',');
-                PutKeyValuePair("heart_rate", HeartRate, ref json);
+                PutArray<List<HeartRate>, HeartRate>("heart_rate", HeartRate, ref json);
             }
             if (TotalCalories != null)
             {
@@ -112,17 +112,22 @@ namespace IronImporter
             if (Path != null && Path.Count > 0)
             {
                 json.Append(',');
-                PutKeyValuePair("path", Path, ref json);
+                PutArray<List<Path>, Path>("path", Path, ref json);
             }
             
             json.Append('}');
         }
 
         // JSON-ize Array
-        protected void PutKeyValuePair<T, U>(string key, T val, ref StringBuilder json) 
+        protected void PutArray<T, U>(string key, T val, ref StringBuilder json) 
             where T : ICollection<U> 
             where U : IJSONable
         {
+            json.Append('"');
+            json.Append(key);
+            json.Append('"');
+            json.Append(':');
+
             bool isMiddle = false;
             json.Append('[');
             foreach(U t in val)
@@ -152,8 +157,8 @@ namespace IronImporter
             json.Append('}');
         }
 
-        private double Timestamp { get; set; }
-        private int Heartrate { get; set; }
+        public double Timestamp { get; set; }
+        public int Heartrate { get; set; }
     }
 
     public class Path : IJSONable
@@ -162,19 +167,28 @@ namespace IronImporter
         {
             json.Append('{');
             PutKeyValuePair("timestamp", Timestamp, ref json);
-            json.Append(',');
-            PutKeyValuePair("latitude", Latitude, ref json);
-            json.Append(',');
-            PutKeyValuePair("longitude", Latitude, ref json);
-            json.Append(',');
-            PutKeyValuePair("altitude", Latitude, ref json);
+            if (Latitude.HasValue)
+            {
+                json.Append(',');
+                PutKeyValuePair("latitude", Latitude.Value, ref json);
+            }
+            if (Longitude.HasValue)
+            {
+                json.Append(',');
+                PutKeyValuePair("longitude", Longitude.Value, ref json);
+            }
+            if (Altitude.HasValue)
+            {
+                json.Append(',');
+                PutKeyValuePair("altitude", Altitude.Value, ref json);
+            }
             json.Append('}');
         }
 
-        private double Timestamp { get; set; }
-        private double Latitude { get; set; }
-        private double Longitude { get; set; }
-        private double Altitude { get; set; }
-        private enum Type { start, end, gps, pause, resume, manual }
+        public double Timestamp { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+        public double? Altitude { get; set; }
+        public enum Type { start, end, gps, pause, resume, manual }
     }
 }
